@@ -53,7 +53,7 @@ Function Get-Player-Input {
     [int]$row, [int]$col = Read-Host -Prompt "Your turn!" | % {$_.Split(' ')}
     $row--;
     $col--;
-    $matrix[$row][$col].value = $global:currToken;    
+    If ($global:matrix[$row][$col].value -eq 0) { $global:matrix[$row][$col].value = $global:currToken; }    
 }
 
 <#
@@ -65,10 +65,10 @@ Below is an explaination for the return codes. They are ordered by the first int
 Return codes
 1,null - Player 1 won
 2,null - Player 2/Computer won
-3,x - Player 1 nearly won, last available place is at x
-4,x - Player 2 nearly won, last available place is at x
-5,x - Player 1 has a single token placed, place taken by token is at x
-6,x - Player 2 has a single token placed, place taken by token is at x
+3,x - Player 2 nearly won, last available place is at x
+4,x - Player 1 nearly won, last available place is at x
+5,x - Player 2 has a single token placed, place taken by token is at x
+6,x - Player 1 has a single token placed, place taken by token is at x
 7,x - A token from both players has been placed, last available place is at x
 8,null - Row is totally full with tokens from both players
 9,null - Empty
