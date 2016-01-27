@@ -34,6 +34,7 @@ Function Reset-Globals {
     # For determining then the current round is done or not
     $global:finished = $false
     
+    
 }
 
 Describe "Get-Triplet-State" {
@@ -93,7 +94,8 @@ Describe "Get-Triplet-State" {
 Describe "Get-Player-Input" {
 
     BeforeEach {
-        Reset-Globals
+        Reset-Globals;
+        Mock Read-Host {};
     }
 
     It "Changes board on P1 input" {
@@ -106,21 +108,27 @@ Describe "Get-Player-Input" {
         $global:currToken = 2
         Mock Read-Host {return "1 2"}
         Get-Player-Input
-        $global:r0c1 | Should Be 2
+        $global:r1c0 | Should Be 2
     }
     It "P1 cannot overwrite P2" {
         $global:currToken = 1
-        $global:r1c0 = 2
+        $global:r0c1 = 2
         Mock Read-Host {return "2 1"}
         Get-Player-Input
-        $global:r1c0 | Should Be 2
+        $global:r0c1 | Should Be 2
     }
     It "P2 cannot overwrite P1" {
         $global:currToken = 2
-        $global:r2c0 = 1
+        $global:r0c2 = 1
         Mock Read-Host {return "3 1"}
         Get-Player-Input
-        $global:r2c0 | Should Be 1
+        $global:r0c2 | Should Be 1
+    }
+    It "P1 cannot overwrite P1" {
+        "Cannot vary inputs for Read-Input" | Should Be "A method for changing Read-Input returns"
+    }
+    It "P2 cannot overwrite P2" {
+        "Cannot vary inputs for Read-Input" | Should Be "A method for changing Read-Input returns"
     }
 
 }

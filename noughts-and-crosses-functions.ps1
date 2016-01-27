@@ -7,6 +7,9 @@ $player2 = $false
 # The marker to put on the game board, denoting which player's turn it is
 $currToken = -1
 
+$tokens = @{0 = ' '; 1 = 'X'; 2 = 'O'}
+            
+
 # Array of abuse that the computer randomly picks to throw at players
 $insults =  "Hmmm....",
             "I've got you now",
@@ -40,20 +43,36 @@ $finished = $false
 # Displays the game board in its current state
 Function Display-State {
     ":Game State:"
-    ForEach ($row in $matrix) { 
+    $rowNum = 0
+    ForEach ($row in $matrix) {
+        $eleNum = 0;
         ForEach ($ele in $row) {
-            Write-Host "$($ele.value) " -NoNewLine
+            Write-Host $global:tokens.get_Item($ele.value) -NoNewLine
+            if ($eleNum -le 1) {
+                $eleNum++;
+                Write-Host " | " -NoNewLine
+            }
         }
-        Write-Host ""
+        if ($rowNum -le 1) {
+            $rowNum++;
+            Write-Host "" 
+            Write-Host "- - - - -"
+        }
     }
+    Write-Host ""
 }
 
 # Prompts the player for their input and sets the element they specify (Using a two-point coordinate) to their token 
 Function Get-Player-Input {
-    [int]$row, [int]$col = Read-Host -Prompt "Your turn!" | % {$_.Split(' ')}
-    $row--;
+    [int]$col, [int]$row = Read-Host -Prompt "Your turn!" | % {$_.Split(' ')} -ErrorAction 'silentlycontinue' 
+    $row = 3 - $row;
     $col--;
-    If ($global:matrix[$row][$col].value -eq 0) { $global:matrix[$row][$col].value = $global:currToken; }    
+    while ($row -lt 0 -or $row -gt 2 -or $col -lt 0 -or $col -gt 2 -or $global:matrix[$row][$col].value -ne 0) {
+        [int]$col, [int]$row = Read-Host -Prompt "Choose valid coordinates" | % {$_.Split(' ')} -ErrorAction 'silentlycontinue'
+        $row = 3 - $row;
+        $col--;
+    }
+    $global:matrix[$row][$col].value = $global:currToken;
 }
 
 <#
@@ -199,20 +218,20 @@ Function Computer-Choice {
 Play Hi-res intro graphics and gets settings for the game.
 #>
 Function Play-Intro {
-    "*******************"
-    "     Welcome to    "
-    "                   "    
-    "NOUGHTS AND CROSSES"
-    "                   "
-    "*******************"
-    "                   "
+    Write-Host  "*******************"
+                "     Welcome to    "
+                "                   "    
+                "NOUGHTS AND CROSSES"
+                "                   "
+                "*******************"
+                "                   "
     Start-Sleep -m 750
     $global:players = Read-Host -Prompt "How many players?"
     while ($global:players -lt 0 -or $global:players -gt 2) {
-        "Please choose a valid number of players"
+        Write-Host "Please choose a valid number of players"
         $global:players = Read-Host -Prompt "How many players?"
     }
-    "!!!"
+    Write-Host "!!!"
     Start-Sleep -m 500
 }
 

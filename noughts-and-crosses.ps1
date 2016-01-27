@@ -4,12 +4,15 @@ Author: Patrick Nicholls
 Date: 8/12/15
 TODO:
     -AI:  rule for split
-    -Abusive computer: Pull insults from a website
-    -Intro screen: Choose 2P or 1P, computer difficulty
+    -More abusive computer: Pull insults from a website
     -Larger board
     -Draw
     -Outline of board; Borders around the boxes
-    -End game when full
+    -Better input
+    -Fix P1 Win only after player 2 check
+    -Prompt user for incorrect entry
+    -Streamline output
+        -Color output
 #>
 
 $ScriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
