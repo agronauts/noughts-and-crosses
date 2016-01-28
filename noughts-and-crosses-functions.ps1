@@ -76,21 +76,19 @@ Function Get-Player-Input {
 }
 
 <#
-Takes a triplet and returns an two-tuple of integers denoting the state of the triplet.
-The first integer represents the type of state of the tuple, while the second denotes a position in the tuple from the top-left.
-The meaning of the second integer depends on the first and hence can be null.
+Takes a triplet and returns an three-tuple of integers denoting the state of the triplet.
+The first integer represents the type of state of the tuple, while the second denotes a position in the tuple from the top-left, while the third denotes the player implicated.
+The relevance of the second and third integer depends on the first and hence can be null.
 Below is an explaination for the return codes. They are ordered by the first integer representing a descending level of importance.
 
 Return codes
-1,null - Player 1 won
-2,null - Player 2/Computer won
-3,x - Player 2 nearly won, last available place is at x
-4,x - Player 1 nearly won, last available place is at x
-5,x - Player 2 has a single token placed, place taken by token is at x
-6,x - Player 1 has a single token placed, place taken by token is at x
-7,x - A token from both players has been placed, last available place is at x
-8,null - Row is totally full with tokens from both players
-9,null - Empty
+1,null,y - Player y won
+2,x,y - Player y nearly won, last available place is at x
+3,x,y - Player y has a single token placed, place taken by token is at x
+4,x - Player 1 has a single token placed, place taken by token is at x
+5,x,null - Tokens from multiple players have been placed, last available place is at x. Player is not applicable
+6,null,null - Triplet is totally full with tokens from mixed players
+7,null,null - Triplet is empty
 #>
 Function Get-Triplet-State ($triplet) {
     # Ugly base-10 code generation, please someone think of a more elegant solution. Note that value at each element is 1 (Player 1) or 2 (Player 2)
@@ -135,7 +133,7 @@ Function Get-Triplet-State ($triplet) {
         return 8, $null
     } 
     elseif ($state -eq 0) {
-        return 9, $null
+        return 7, $null, $null
     } 
 
 }

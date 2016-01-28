@@ -44,7 +44,9 @@ Describe "Get-Triplet-State" {
     }
 
     It "Reports empty row" {
-        $(Get-Triplet-State($triplets[0]))[0] | Should Be 9
+        $(Get-Triplet-State($triplets[0]))[0] | Should Be 7
+        $(Get-Triplet-State($triplets[0]))[1] | Should Be $null
+        $(Get-Triplet-State($triplets[0]))[2] | Should Be $null
     }
     It "Reports row with one entry from P1" {
         $global:r0c0 = 1
