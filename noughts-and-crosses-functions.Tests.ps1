@@ -9,33 +9,6 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
 Import-Module $here\$sut
 
-Function Reset-Globals {
-
-    # Boolean values for deciding what players are playing
-    $global:comp1 = $false
-    $global:comp2 = $false
-    $global:player1 = $false
-    $global:player2 = $false
-
-    # The marker to put on the game board, denoting which player's turn it is
-    $global:currToken = -1
-
-    # Array of abuse that the computer randomly picks to throw at players
-    $global:insults =  "Hmmm....",
-                "I've got you now",
-                "Here comes the pain",
-                "Game over mate"
-
-    # Elements of the game board, will also reset $matrix and $triplets
-    $global:r0c0, $global:r0c1, $global:r0c2 = 0, 0, 0
-    $global:r1c0, $global:r1c1, $global:r1c2 = 0, 0, 0
-    $global:r2c0, $global:r2c1, $global:r2c2 = 0, 0, 0
-
-    # For determining then the current round is done or not
-    $global:finished = $false
-    
-    
-}
 
 Describe "Get-Triplet-State" {
 
@@ -44,50 +17,72 @@ Describe "Get-Triplet-State" {
     }
 
     It "Reports empty row" {
-        $(Get-Triplet-State($triplets[0]))[0] | Should Be 7
+        $(Get-Triplet-State($triplets[0]))[0] | Should Be 4
         $(Get-Triplet-State($triplets[0]))[1] | Should Be $null
         $(Get-Triplet-State($triplets[0]))[2] | Should Be $null
     }
+    
     It "Reports row with one entry from P1" {
         $global:r0c0 = 1
-        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 6
+        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 3
         $(Get-Triplet-State($global:triplets[0]))[1] | Should Be 0
+        $(Get-Triplet-State($global:triplets[0]))[2] | Should Be 1
     }
     It "Reports row with one entry from P2" {
         $global:r0c0 = 2
-        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 5
+        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 3
         $(Get-Triplet-State($global:triplets[0]))[1] | Should Be 0
+        $(Get-Triplet-State($global:triplets[0]))[2] | Should Be 2
     }
     It "Reports row with two entries from P1" {
         $global:r0c0 = 1
         $global:r0c1 = 1
-        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 4
+        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 2
         $(Get-Triplet-State($global:triplets[0]))[1] | Should Be 2
+        $(Get-Triplet-State($global:triplets[0]))[2] | Should Be 1
     }
     It "Reports row with two entries from P2" {
         $global:r0c0 = 2
         $global:r0c1 = 2
-        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 3
+        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 2
+        $(Get-Triplet-State($global:triplets[0]))[1] | Should Be 2
         $(Get-Triplet-State($global:triplets[0]))[1] | Should Be 2
     }
+    
     It "Reports row with three entries from P2" {
         $global:r0c0 = 2
         $global:r0c1 = 2
         $global:r0c2 = 2
-        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 2
+        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 1
+        $(Get-Triplet-State($global:triplets[0]))[1] | Should Be $null
+        $(Get-Triplet-State($global:triplets[0]))[2] | Should Be 2
     }
     It "Reports row with three entries from P1" {
         $global:r0c0 = 1
         $global:r0c1 = 1
         $global:r0c2 = 1
         $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 1
+        $(Get-Triplet-State($global:triplets[0]))[1] | Should Be $null
+        $(Get-Triplet-State($global:triplets[0]))[2] | Should Be 1
     }
     It "Reports full row with mixed entries" {
         $global:r0c0 = 1
         $global:r0c1 = 2
         $global:r0c2 = 1
-        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 8
+        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 6
+        $(Get-Triplet-State($global:triplets[0]))[1] | Should Be $null
+        $(Get-Triplet-State($global:triplets[0]))[2] | Should Be $null
     }
+    
+    It "Reports 2-full row with mixed entries" {
+        $global:r0c0 = 1
+        $global:r0c1 = 0
+        $global:r0c2 = 2
+        $(Get-Triplet-State($global:triplets[0]))[0] | Should Be 5
+        $(Get-Triplet-State($global:triplets[0]))[1] | Should Be 1
+        $(Get-Triplet-State($global:triplets[0]))[2] | Should Be $null
+    }
+    
     
     
 }
@@ -131,6 +126,67 @@ Describe "Get-Player-Input" {
     }
     It "P2 cannot overwrite P2" {
         "Cannot vary inputs for Read-Input" | Should Be "A method for changing Read-Input returns"
+    }
+
+}
+
+Describe "Check-Win" {
+    
+    BeforeEach {
+        Reset-Globals;
+    }
+
+    It "Reports when P1 has won" {
+        $global:r0c2 = 1
+        $global:r1c2 = 1
+        $global:r2c2 = 1
+        Check-Win | Should Be 1
+    }
+    It "Reports when P2 has won" {
+        $global:r0c1 = 2
+        $global:r1c1 = 2
+        $global:r2c1 = 2
+        Check-Win | Should Be 2
+    }
+    It "Reports when no one has won" {
+        $global:r0c2 = 1
+        $global:r1c2 = 1
+        $global:r2c2 = 2
+        Check-Win | Should Be $false
+    }
+
+}
+
+Describe "Get-Choice" {
+    
+    BeforeEach {
+        Reset-Globals;
+    }
+    It "Choose to complete row with nothing else around" {
+        $global:r2c0 = 1
+        $global:r2c1 = 1
+        Get-Choice | Should Be 2, 2, 2
+    }
+    It "Choose to build row with nothing else around" {
+        $global:r0c0 = 1 
+        $(Get-Choice)[0] | Should Be 3
+        $(Get-Choice)[2] | Should Be 0
+    }
+    
+    It "Choose to complete row rather than a mixed one" {
+        $global:r0c0 = 1 
+        $global:r0c1 = 1
+        $global:r1c0 = 2
+        $(Get-Choice)[0] | Should Be 2
+        $(Get-Choice)[2] | Should Be 0
+    }
+    It "Choose to complete row rather than anything else" {
+        $global:r0c0, $global:r0c1, $global:r0c2 = 1, 2, 1
+        $global:r1c0, $global:r1c1, $global:r1c2 = 0, 2, 0
+        $global:r2c0, $global:r2c1, $global:r2c2 = 2, 1, 1 
+        $(Get-Choice)[0] | Should Be 2
+        $(Get-Choice)[1] | Should Be 1
+        $(Get-Choice)[2] | Should Be 5
     }
 
 }

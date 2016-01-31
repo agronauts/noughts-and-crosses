@@ -36,9 +36,32 @@ $triplets = ([ref]$r0c0, [ref]$r0c1, [ref]$r0c2),#row 1
             ([ref]$r0c0, [ref]$r1c1, [ref]$r2c2),#diagonal 1
             ([ref]$r0c2, [ref]$r1c1, [ref]$r2c0) #diagonal 2
 
-# For determining then the current round is done or not
-$finished = $false
+Function Reset-Globals {
 
+    # Boolean values for deciding what players are playing
+    $global:comp1 = $global:false
+    $global:comp2 = $global:false
+    $global:player1 = $global:false
+    $global:player2 = $global:false
+
+    # The marker to put on the game board, denoting which player's turn it is
+    $global:currToken = -1
+
+    $global:tokens = @{0 = ' '; 1 = 'X'; 2 = 'O'}
+            
+
+    # Array of abuse that the computer randomly picks to throw at players
+    $global:insults =  "Hmmm....",
+                "I've got you now",
+                "Here comes the pain",
+                "Game over mate"
+
+    # Elements of the game board
+    $global:r0c0, $global:r0c1, $global:r0c2 = 0, 0, 0
+    $global:r1c0, $global:r1c1, $global:r1c2 = 0, 0, 0
+    $global:r2c0, $global:r2c1, $global:r2c2 = 0, 0, 0
+
+}
 
 # Displays the game board in its current state
 Function Display-State {
@@ -85,68 +108,67 @@ Return codes
 1,null,y - Player y won
 2,x,y - Player y nearly won, last available place is at x
 3,x,y - Player y has a single token placed, place taken by token is at x
-4,x - Player 1 has a single token placed, place taken by token is at x
+4,null,null - Triplet is empty
 5,x,null - Tokens from multiple players have been placed, last available place is at x. Player is not applicable
 6,null,null - Triplet is totally full with tokens from mixed players
-7,null,null - Triplet is empty
+
 #>
 Function Get-Triplet-State ($triplet) {
     # Ugly base-10 code generation, please someone think of a more elegant solution. Note that value at each element is 1 (Player 1) or 2 (Player 2)
     $state = [int]$triplet[0].value*1 + [int]$triplet[1].value*10 + [int]$triplet[2].value*100
-   
-    if ($state -eq 111) {   
-        return 1, $null
+
+    if ((111, 222) -contains $state) {   
+        if ($state -eq 111) { return 1, $null, 1 } 
+        if ($state -eq 222) { return 1, $null, 2 }
     } 
-    elseif ($state -eq 222) {
-        return 2, $null
+    elseif ((22, 202, 220, 11, 101, 110) -contains $state) {
+        if ($state -eq 220) { return 2, 0, 2 }
+        if ($state -eq 202) { return 2, 1, 2 }
+        if ($state -eq  22) { return 2, 2, 2 }
+        if ($state -eq 110) { return 2, 0, 1 }
+        if ($state -eq 101) { return 2, 1, 1 }
+        if ($state -eq  11) { return 2, 2, 1 }
     }
-    elseif ($state -eq 22 -or $state -eq 202 -or $state -eq 220) {
-        if ($state -eq 220) { return 3, 0 }
-        if ($state -eq 202) { return 3, 1 }
-        if ($state -eq  22) { return 3, 2 }
+    elseif ((2, 20, 200, 1, 10, 100) -contains $state) {
+        if ($state -eq   2) { return 3, 0, 2 }
+        if ($state -eq  20) { return 3, 1, 2 }
+        if ($state -eq 200) { return 3, 2, 2 }
+        if ($state -eq   1) { return 3, 0, 1 }
+        if ($state -eq  10) { return 3, 1, 1 }
+        if ($state -eq 100) { return 3, 2, 1 }
+    }   
+    elseif ($state -eq 0) {
+        return 4, $null, $null
     }    
-    elseif ($state -eq 11 -or $state -eq 101 -or $state -eq 110) {
-        if ($state -eq 110) { return 4, 0 }
-        if ($state -eq 101) { return 4, 1 }
-        if ($state -eq  11) { return 4, 2 }
-    }
-    
-    elseif ($state -eq 2 -or $state -eq 20 -or $state -eq 200) {
-        if ($state -eq   2) { return 5, 0 }
-        if ($state -eq  20) { return 5, 1 }
-        if ($state -eq 200) { return 5, 2 }
-    }
-    elseif ($state -eq 1 -or $state -eq 10 -or $state -eq 100) {
-        if ($state -eq   1) { return 6, 0 }
-        if ($state -eq  10) { return 6, 1 }
-        if ($state -eq 100) { return 6, 2 }
-    }
-    elseif ($state -eq 12 -or $state -eq 21 -or $state -eq 102 -or$state -eq 201 -or $state -eq 120 -or $state -eq 210) {
-        if ($state -eq 120) { return 7, 0 }
-        if ($state -eq 210) { return 7, 0 }
-        if ($state -eq 102) { return 7, 1 }
-        if ($state -eq 201) { return 7, 1 }
-        if ($state -eq  12) { return 7, 2 }
-        if ($state -eq  21) { return 7, 2 }        
+    elseif ((12,21,102,201,120,210) -contains $state) {
+        if ($state -eq 120) { return 5, 0, $null }
+        if ($state -eq 210) { return 5, 0, $null }
+        if ($state -eq 102) { return 5, 1, $null }
+        if ($state -eq 201) { return 5, 1, $null }
+        if ($state -eq  12) { return 5, 2, $null }
+        if ($state -eq  21) { return 5, 2, $null }        
     }   
     elseif ($state -ne 0) {
-        return 8, $null
+        return 6, $null, $null
     } 
-    elseif ($state -eq 0) {
-        return 7, $null, $null
-    } 
-
 }
 
-Function Check-Status ($status) {
-    ForEach ($triplet in $triplets) {
-        $returnCode = Get-Triplet-State($triplet)
-        if ($returnCode[0] -eq $status) {
-            if ($status -eq 1) { $global:winner = "You won!" }
-            if ($status -eq 2) { $global:winner = "You lost!" }
-            $global:finished = $true
+<#
+Iterates through all triplets to see if someone has won, returning the player code of the winner.
+#>
+Function Check-Win {
+    $full = $true
+    ForEach ($triplet in $global:triplets) {
+        $someoneWon, $null, $winner = Get-Triplet-State($triplet)
+        if ($someoneWon -eq 1) {
+            return $winner
+        }
+        elseif ($someoneWon -ne 6) {
+            $full = $false
         }    
     }
+    if ($full) { return 3 }
+    return $false
 }
 
 <#
@@ -157,14 +179,36 @@ Function Get-Choice {
     $choice = 999
     $currTriplet = 0
     $tripletIndex = 0
-    ForEach ($triplet in $triplets) {
-        if ((Get-Triplet-State($triplet))[0] -lt $choice) { 
+    ForEach ($triplet in $global:triplets) {
+        $returnCode, $null, $player = Get-Triplet-State($triplet)
+        if ($returnCode -lt $choice) { 
+            $choice = (Get-Triplet-State($triplet))[0] 
+            $position = (Get-Triplet-State($triplet))[1]
+            $tripletIndex = $currTriplet
+        }
+        elseif ($returnCode -eq 3 -and $player -eq $currToken) { 
             $choice = (Get-Triplet-State($triplet))[0] 
             $position = (Get-Triplet-State($triplet))[1]
             $tripletIndex = $currTriplet
         }
         $currTriplet++
     }
+        
+    #Build up a row if there is already one there
+    if ($choice -eq 3) {
+        $position = ($position + (Get-Random -minimum 1 -maximum 3)) % 3
+    }
+    
+    # Else randomly choose block
+    elseif ($choice -ge 4) {
+        $position = Get-Random -Minimum 0 -Maximum 3
+        $tripletIndex = Get-Random -Minimum 0 -Maximum 9
+        while ($matrix[$compX][$compY].value -ne 0) {
+            $position = Get-Random -Minimum 0 -Maximum 3
+            $tripletIndex = Get-Random -Minimum 0 -Maximum 9
+        }
+    }
+
     return $choice, $position, $tripletIndex
 }
 
@@ -185,31 +229,10 @@ Function Computer-Choice {
     
     # Get choice
     $choice, $position, $tripletIndex = Get-Choice
+
+    # Execute choice
+    $global:triplets[$tripletIndex][$position].value = $global:currToken
     
-    # If the game has already been won, don't do anything
-    if ($choice -le 2) {
-        
-    }
-    
-    # If it can win or block player, do it
-    elseif ($choice -le 4) {
-        $global:triplets[$tripletIndex][$position].value = $global:currToken
-    } 
-    
-    #Build up a row if there is already one there
-    elseif ($choice -le 6) {
-         $global:triplets[$tripletIndex][($position + (Get-Random -minimum 1 -maximum 3)) % 3].value = $global:currToken
-    
-    # Else randomly choose block
-    } else {
-        $compX = Get-Random -Minimum 0 -Maximum 3
-        $compY = Get-Random -Minimum 0 -Maximum 3
-        while ($matrix[$compX][$compY].value -ne 0) {
-            $compX = Get-Random -Minimum 0 -Maximum 3
-            $compY = Get-Random -Minimum 0 -Maximum 3
-        }
-        $matrix[$compX][$compY].value = $global:currToken
-    }
 }
 
 <#
