@@ -4,13 +4,11 @@ The classic game of noughts and crosses... in Powershell!
 ## Install & Run
 
 1. Download the zip file or pull from this repository
-2. Open a Powershell console with administrative rights (Right click, Run as administrator)
-3. Navigate to the directory where the files reside. One way is to use the commands:
-  - cd C:\
-  - cd Path\To\Files\
+2. Open Powershell IDE (Comes with Windows OS) with administrative rights (Right click, Run as administrator)
+3. Open the noughts-and-crosses.ps1 file
 4. Run the command: Set-ExecutionPolicy Unrestricted 
 5. Type "Y" for the prompt (Please don't be scared by the stern warning thrown. Because this script doesn't have a certificate, you need to change the execution policy otherwise Powershell will be mean and won't run the script. I assure you there isn't an ounce of maliciousness in this script.)
-6. Run the command: .\noughts-and-crosses.ps1
+6. Run the noughts-and-crosses.ps1 file: Press F5
 
 ## How to play
 
